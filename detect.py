@@ -1,8 +1,7 @@
 import cv2
 import torch
 import numpy as np
-from useTorch2 import FaceCNN
-from models import VGG
+from models import VGG, FaceCNN
 
 
 OFF_SET_X = 20
