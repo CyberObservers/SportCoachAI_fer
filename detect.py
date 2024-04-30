@@ -7,9 +7,11 @@ from models import VGG, FaceCNN
 OFF_SET_X = 20
 OFF_SET_Y = 20
 emo_dict = np.array(['anger', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral'])
+device = 'cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_built() else 'cpu'
+
 
 if __name__ == '__main__':
-    model = torch.load('weights/vgg_it100.pkl', map_location='cpu')
+    model = torch.load('weights/vgg_it100.pkl', map_location=device)
     faceCascade = cv2.CascadeClassifier('./weights/haarcascade_frontalface_default.xml')
 
     cap = cv2.VideoCapture(0)
@@ -39,10 +41,10 @@ if __name__ == '__main__':
                 continue
             img = cv2.resize(img, (48, 48), interpolation=cv2.INTER_AREA).reshape(1, 1, 48, 48) / 255.0
 
-            img = torch.tensor(img).to(torch.float32)
+            img = torch.tensor(img).to(torch.float32).to(device)
             with torch.no_grad():
                 pred = model.forward(img)
-            index = np.argmax(pred.data.numpy(), axis=1)
+            index = np.argmax(pred.data.cpu().numpy(), axis=1)
             res = f"result={emo_dict[index][0]}"
 
             cv2.putText(frame, res, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255), 2)
