@@ -8,13 +8,13 @@ OFF_SET_X = 20
 OFF_SET_Y = 20
 emo_dict = np.array(['anger', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral'])
 
-if __name__ == '__main__':
+def peekFace():
     model = torch.load('weights/vgg_it100.pkl', map_location='cpu')
     faceCascade = cv2.CascadeClassifier('./weights/haarcascade_frontalface_default.xml')
 
     cap = cv2.VideoCapture(0)
     cap.set(3, 640)  # set Width
-    cap.set(4, 480)  # set Height
+    cap.set(4, 480)  # set Heigh
     cv2.namedWindow("preview")
 
     while cap.isOpened():
@@ -54,3 +54,6 @@ if __name__ == '__main__':
             break
     cap.release()
     cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    peekFace()
