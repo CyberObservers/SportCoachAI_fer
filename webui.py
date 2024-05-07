@@ -28,7 +28,11 @@ def real_time_emotion_detect():
     emotion_list = np.array(['anger', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral'])
     emotion_result = ""
     
-    model = torch.load('weights/vgg_it100.pkl', map_location='cpu')
+    # 加载模型到 CUDA 设备上
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = torch.load('weights/vgg_it100.pkl', map_location=device)
+    model.to(device)
+    
     faceCascade = cv2.CascadeClassifier('./weights/haarcascade_frontalface_default.xml')
 
     cap = cv2.VideoCapture(0)
@@ -55,10 +59,12 @@ def real_time_emotion_detect():
                 continue
             img = cv2.resize(img, (48, 48), interpolation=cv2.INTER_AREA).reshape(1, 1, 48, 48) / 255.0
 
-            img = torch.tensor(img).to(torch.float32)
+            # 将图像张量移动到 CUDA 设备上
+            img = torch.tensor(img).to(torch.float32).to(device)
             with torch.no_grad():
+                # 在 CUDA 设备上进行推理
                 pred = model.forward(img)
-            index = np.argmax(pred.data.numpy(), axis=1)
+            index = np.argmax(pred.cpu().data.numpy(), axis=1)  # 将结果移回 CPU
             emotion = emotion_list[index][0]
             frame_count += 1
 
