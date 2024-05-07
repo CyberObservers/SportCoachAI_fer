@@ -7,10 +7,10 @@ from models import VGG, FaceCNN
 OFF_SET_X = 20
 OFF_SET_Y = 20
 emo_dict = np.array(['anger', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral'])
-device = 'cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_built() else 'cpu'
 
 
 if __name__ == '__main__':
+    device = 'cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_built() else 'cpu'
     model = torch.load('weights/vgg_it100.pkl', map_location=device)
     faceCascade = cv2.CascadeClassifier('./weights/haarcascade_frontalface_default.xml')
 
