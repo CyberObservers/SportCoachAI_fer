@@ -15,12 +15,16 @@ def peekFace():
     faceCascade = cv2.CascadeClassifier('./weights/haarcascade_frontalface_default.xml')
 
     cap = cv2.VideoCapture(0)
-    cap.set(3, 640)  # set Width
-    cap.set(4, 480)  # set Height
+    width = 640
+    height = 480
+    cap.set(3, width)  # set Width
+    cap.set(4, height)  # set Height
     cv2.namedWindow("preview")
 
     while cap.isOpened():
         ret, frame = cap.read()
+        if not ret:
+            continue
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = faceCascade.detectMultiScale(
             gray,
@@ -33,10 +37,13 @@ def peekFace():
             y -= OFF_SET_Y
             w += OFF_SET_X + OFF_SET_X
             h += OFF_SET_Y + OFF_SET_Y
-            if x <= 0 or y <= 0 or x + w >= 640 or y + h >= 480:
-                continue
 
-            img = gray[x:x + w, y:y + h]
+            x1 = 0 if x <= 0 else x
+            y1 = 0 if y <= 0 else y
+            x2 = width if x + w > width else x + w
+            y2 = height if y + h > height else y + h
+
+            img = gray[x1:x2, y1:y2]
             if img is None:
                 continue
             img = cv2.resize(img, (48, 48), interpolation=cv2.INTER_AREA).reshape(1, 1, 48, 48) / 255.0
@@ -47,8 +54,8 @@ def peekFace():
             index = np.argmax(pred.data.cpu().numpy(), axis=1)
             res = f"result={emo_dict[index][0]}"
 
-            cv2.putText(frame, res, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255), 2)
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+            cv2.putText(frame, res, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255), 2)
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
         cv2.imshow("preview", frame)
 
         key = cv2.waitKey(24)
@@ -56,3 +63,7 @@ def peekFace():
             break
     cap.release()
     cv2.destroyAllWindows()
+
+
+if __name__ == '__main__':
+    peekFace()
