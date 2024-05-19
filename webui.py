@@ -16,8 +16,7 @@ frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) #图像高度
 isEnd = False
 one_turn_res = "" 
 
-OFF_SET_X = 20
-OFF_SET_Y = 20
+SCALE = 0.05
        
 def real_time_emotion_detect():
     global isEnd
@@ -29,7 +28,8 @@ def real_time_emotion_detect():
     emotion_result = ""
     
     # 加载模型到 CUDA 设备上
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_built() else 'cpu')
+    print(device)
     model = torch.load('weights/vgg_it100.pkl', map_location=device)
     model.to(device)
     
@@ -40,6 +40,7 @@ def real_time_emotion_detect():
     while not isEnd:
         ret, frame = cap.read()
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         faces = faceCascade.detectMultiScale(
             gray,
             scaleFactor=1.2,
@@ -47,6 +48,8 @@ def real_time_emotion_detect():
             minSize=(20, 20)
         )
         for (x, y, w, h) in faces:
+            OFF_SET_X = int(w * SCALE)
+            OFF_SET_Y = int(h * SCALE)
             x -= OFF_SET_X
             y -= OFF_SET_Y
             w += OFF_SET_X + OFF_SET_X
@@ -102,7 +105,7 @@ def real_time_emotion_detect():
             global one_turn_res
             one_turn_res = emotion_result
         # Display the resulting frame
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         yield frame, one_turn_res
 
         # Press 'q' to exit
@@ -153,4 +156,4 @@ with gr.Blocks() as demo:
     
     demo.launch()
     cap.release()
-    cap.destroyAllWindows()
+    cv2.destroyAllWindows()

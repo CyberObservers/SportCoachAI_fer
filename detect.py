@@ -4,8 +4,8 @@ import numpy as np
 from models import VGG, FaceCNN
 
 
-OFF_SET_X = 20
-OFF_SET_Y = 20
+# OFF_SET_X = 20
+# OFF_SET_Y = 20
 emo_dict = np.array(['anger', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral'])
 
 
@@ -33,6 +33,8 @@ def peekFace():
             minSize=(20, 20)
         )
         for (x, y, w, h) in faces:
+            OFF_SET_X = int(w*0.05)
+            OFF_SET_Y = int(h*0.05)
             x -= OFF_SET_X
             y -= OFF_SET_Y
             w += OFF_SET_X + OFF_SET_X
@@ -44,7 +46,8 @@ def peekFace():
             y2 = height if y + h > height else y + h
 
             img = gray[x1:x2, y1:y2]
-            if img is None:
+            # img_w, img_h = img.shape
+            if img is None or img.shape[0]<=0 or img.shape[1]<=0:
                 continue
             img = cv2.resize(img, (48, 48), interpolation=cv2.INTER_AREA).reshape(1, 1, 48, 48) / 255.0
 

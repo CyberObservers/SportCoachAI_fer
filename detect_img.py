@@ -20,7 +20,7 @@ if __name__ == '__main__':
     faceCascade = cv2.CascadeClassifier('./weights/haarcascade_frontalface_default.xml')
 
     cv2.namedWindow("preview")
-    frame = cv2.imread('./img.png')
+    frame = cv2.imread('./0.png')
     height, width, _ = frame.shape
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     faces = faceCascade.detectMultiScale(
