@@ -1,7 +1,8 @@
 import cv2
 import torch
 import numpy as np
-from models import VGG, FaceCNN
+from util import resize_image
+from models import VGG, FaceCNN, DenseNet121
 
 
 # OFF_SET_X = 20
@@ -11,12 +12,14 @@ emo_dict = np.array(['anger', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'ne
 
 def peekFace():
     device = 'cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_built() else 'cpu'
-    model = torch.load('weights/vgg_it100.pkl', map_location=device)
+    # model = torch.load('weights/vgg_it100.pkl', map_location=device)
+    model = torch.load('weights/model_it60.pkl', map_location=device)
+    model.eval()
     faceCascade = cv2.CascadeClassifier('./weights/haarcascade_frontalface_default.xml')
 
     cap = cv2.VideoCapture(0)
-    width = 640
-    height = 480
+    width = 1920
+    height = 1080
     cap.set(3, width)  # set Width
     cap.set(4, height)  # set Height
     cv2.namedWindow("preview")
@@ -49,7 +52,8 @@ def peekFace():
             # img_w, img_h = img.shape
             if img is None or img.shape[0]<=0 or img.shape[1]<=0:
                 continue
-            img = cv2.resize(img, (48, 48), interpolation=cv2.INTER_AREA).reshape(1, 1, 48, 48) / 255.0
+            img = np.array([resize_image(img, (48, 48))])
+            # img = cv2.resize(img, (48, 48), interpolation=cv2.INTER_AREA).reshape(1, 1, 48, 48) / 255.0
 
             img = torch.tensor(img).to(torch.float32).to(device)
             with torch.no_grad():
