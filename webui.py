@@ -30,8 +30,9 @@ def real_time_emotion_detect():
     # 加载模型到 CUDA 设备上
     device = torch.device('cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_built() else 'cpu')
     print(device)
-    model = torch.load('weights/vgg_it100.pkl', map_location=device)
+    model = torch.load('weights/model_it60.pkl', map_location=device)
     model.to(device)
+    model.eval()
     
     faceCascade = cv2.CascadeClassifier('./weights/haarcascade_frontalface_default.xml')
 
@@ -54,8 +55,8 @@ def real_time_emotion_detect():
             y -= OFF_SET_Y
             w += OFF_SET_X + OFF_SET_X
             h += OFF_SET_Y + OFF_SET_Y
-            if x <= 0 or y <= 0 or x + w >= 640 or y + h >= 480:
-                continue
+            # if x <= 0 or y <= 0 or x + w >= 640 or y + h >= 480:
+            #     continue
 
             img = gray[x:x + w, y:y + h]
             if img is None or img.shape[0]<=0 or img.shape[1]<=0:
@@ -69,6 +70,7 @@ def real_time_emotion_detect():
                 pred = model.forward(img)
             index = np.argmax(pred.cpu().data.numpy(), axis=1)  # 将结果移回 CPU
             emotion = emotion_list[index][0]
+            print(emotion)
             frame_count += 1
 
             if len(feeling) < 30:
@@ -107,6 +109,7 @@ def real_time_emotion_detect():
         # Display the resulting frame
         # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         yield frame, one_turn_res
+
 
         # Press 'q' to exit
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -149,7 +152,7 @@ with gr.Blocks() as demo:
                 )
             with gr.Row():
                 start_btn = gr.Button("Start")
-                start_btn.click(real_time_emotion_detect, outputs = [video, result])
+                start_btn.click(real_time_emotion_detect,outputs = [video, result])
             with gr.Row():
                 stop_btn = gr.Button("Stop")
                 stop_btn.click(stop, outputs = [video])
